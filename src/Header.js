@@ -21,7 +21,7 @@ class Header extends Component {
    render() {
     return (
         <div className="header">
-            <a>
+            <a href="logo"> 
             BWM Logo
             </a>
            <ul>

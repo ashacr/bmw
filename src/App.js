@@ -1,42 +1,205 @@
-
-import React, { Component } from 'react'
-import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
-import '../node_modules/react-bootstrap-table/css/react-bootstrap-table.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import data from './products.json';
+import React,{useState,useMemo,useEffect} from 'react';
 import Header from "./Header.js"
-import "./App.css"
- class App extends Component {
-  render() {
-    const options = {
-      page: 1,  // which page you want to show as default
-      sizePerPageList: [ {
-        text: '5', value: 5
-      }, {
-        text: '10', value: 10
-      }, {
-        text: 'All', value: data.length
-      } ], // you can change the dropdown list for size per page
-      sizePerPage: 5  // which size per page you want to locate as default
-    
-    };
-    return (
-      <div>
-        <Header />
-        <h4 className="bmw">BMW Tabular Dashboard</h4>
-      <BootstrapTable data={data} striped hover pagination={ true } options={ options }>
-      <TableHeaderColumn isKey={ true } dataField='id' dataSort={ true } filter={ { type: 'TextFilter', delay: 1000 }}>Sl No</TableHeaderColumn>
-      <TableHeaderColumn dataField='purhcasedate' dataSort={ true } filter={ { type: 'TextFilter', delay: 1000 } }>Purchased Date</TableHeaderColumn>
-      <TableHeaderColumn dataField='price' dataSort={ true } filter={ { type: 'TextFilter', delay: 1000 } }>Price-Rs</TableHeaderColumn>
-      <TableHeaderColumn dataField='quantity' dataSort={ true } filter={ { type: 'TextFilter', delay: 1000 } }> Quantity</TableHeaderColumn>
-      <TableHeaderColumn dataField='name' dataSort={ true } filter={ { type: 'TextFilter', delay: 1000 } }>Emp Name</TableHeaderColumn>
-      <TableHeaderColumn dataField='requestDate' dataSort={ true } filter={ { type: 'TextFilter', delay: 1000 } }>  Requested date</TableHeaderColumn>
-      </BootstrapTable>
-      </div>
-    )
+import Pagination from 'react-paginate';
+import usePagination from './Pagination';
+import data from './products.json';
+
+const useSortableData = (items, config = null) => {
+  const [sortConfig, setSortConfig] = useState(config);
+  const sortedItems = useMemo(() => {
+    let sortableItems = [...items];
+    if (sortConfig !== null) {
+      sortableItems.sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+          return sortConfig.direction === 'ascending' ? -1 : 1;
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+          return sortConfig.direction === 'ascending' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    return sortableItems;
+  }, [items, sortConfig]);
+  
+  const requestSort = (key) => {
+    let direction = 'ascending';
+    if (
+      sortConfig &&
+      sortConfig.key === key &&
+      sortConfig.direction === 'ascending'
+    ) {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  return { items: sortedItems, requestSort, sortConfig };
+};
+
+const ProductTable = (props) => {
+const [searchTerm, setSearchTerm] = useState("");
+const [searchResults, setSearchResults] = useState([]);
+const handleFilterChange = e => {
+  setSearchTerm(e.target.value);
+  
+};
+const [errMsg, setErrMsg] = useState(true);
+useEffect(() => {  
+  let results =data.filter((item) =>  
+     item.id.toString().toLowerCase().includes(searchTerm) + 
+     item.name.toLowerCase().includes(searchTerm) +
+     item.purhcasedate.toLowerCase().includes(searchTerm) +
+     item.requestDate.toLowerCase().includes(searchTerm) +
+     item.price.toString().toLowerCase().includes(searchTerm)  +
+     item.quantity.toString().toLowerCase().includes(searchTerm)      
+  ); 
+  if(results == ''){  
+    setErrMsg(currenterrMsg => !currenterrMsg) 
+      
+  }else{
+    setErrMsg(currenterrMsg => true) 
   }
+  setSearchResults(results);
+ 
+}, [searchTerm]);
+
+let [page, setPage] = useState(1);
+const PER_PAGE = 6;
+const count = Math.ceil(data.length / PER_PAGE);
+  const _DATA = usePagination(searchResults, PER_PAGE);
+  const handleChange = (e, p) => {
+    setPage(p);
+    if(e.selected){    
+      _DATA.next(p); 
+    }else{
+      _DATA.prev(p); 
+    }
+   
+  };
+  
+  const { items, requestSort, sortConfig } = useSortableData(_DATA.currentData());
+  const getClassNamesFor = (name) => {
+    if (!sortConfig) {
+      return;
+    }
+    return sortConfig.key === name ? sortConfig.direction : undefined;
+  };
+  
+  return (
+    <div>      
+    <Header />
+    <h4 className="bmw">BMW Tabular Dashboard</h4>
+    <div className="table-container">
+        <input
+            type="text"
+            placeholder="Search the fileds here"
+            value={searchTerm}
+            onChange={handleFilterChange}
+            className="filterinput"
+          />   
+    <table>
+      <thead>
+        <tr>          
+          <th>
+            <button
+              type="button"
+              onClick={() => requestSort('id')}
+              className={getClassNamesFor('id')}
+            >
+              Sl No
+            </button>
+           
+          </th>
+          <th>
+            <button
+              type="button"
+              onClick={() => requestSort('purhcasedate')}
+              className={getClassNamesFor('purhcasedate')}
+            >
+              Purchased Date
+            </button>
+          </th>
+          <th>
+            <button
+              type="button"
+              onClick={() => requestSort('price')}
+              className={getClassNamesFor('price')}
+            >
+              Price
+            </button>
+          </th>
+          <th>
+            <button
+              type="button"
+              onClick={() => requestSort('quantity')}
+              className={getClassNamesFor('quantity')}
+            >
+              Quantity
+            </button>
+          </th>
+          <th>
+            <button
+              type="button"
+              onClick={() => requestSort('name')}
+              className={getClassNamesFor('name')}
+            >
+              Emp Name
+            </button>
+          </th>
+          <th>
+            <button
+              type="button"
+              onClick={() => requestSort('requestDate')}
+              className={getClassNamesFor('requestDate')}
+            >
+              Requested Date
+            </button>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        { 
+         (errMsg) ? 
+       items.map((item) => (              
+          <tr  key={item.id} >
+            <td>{item.id}</td>
+              <td>{item.purhcasedate}</td>
+              <td>{item.price}</td>
+              <td>{item.quantity}</td>
+              <td>{item.name}</td>
+            <td>{item.requestDate}</td>
+          </tr>
+          ))
+          :
+       <tr className="errMsg" ><td colSpan="6">NO RESULTS FOUND</td></tr>
+      }
+     
+      </tbody>
+    </table>
+   { (errMsg) ? 
+    <Pagination
+          pageCount={count}
+          marginPagesDisplayed={page}
+          pageRangeDisplayed={page}
+          onPageChange={handleChange}
+          containerClassName={'pagination'}
+          activeClassName={'active'}
+        />
+        :
+        ""
+   }
+    </div>    
+    </div>
+  );
+};
+
+export default function App() {  
+  return (
+    <div className="App">
+      <ProductTable
+        products={data}
+      />
+    </div>
+  );
 }
-
-export default App
-
-
