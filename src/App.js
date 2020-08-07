@@ -85,7 +85,7 @@ const count = Math.ceil(data.length / PER_PAGE);
     }
     return sortConfig.key === name ? sortConfig.direction : undefined;
   };
-  const myArr =
+  const tableHeader =
    [
     "Id",
     "Purhcase Date",
@@ -111,14 +111,13 @@ const count = Math.ceil(data.length / PER_PAGE);
     <thead>
       <tr>           
         {   
-        myArr.map((item, i) =>  
-        
+        tableHeader.map((item, i) =>          
           <th key={item + i}>     
             <button  key={item}
             type="button"
             onClick={() => requestSort(item.replace(/\s+/g, '').toLowerCase())}
             className={getClassNamesFor(item.replace(/\s+/g, '').toLowerCase())}
-            >  {item}</button> 
+            > {item}</button> 
           </th>
           )
         } 
