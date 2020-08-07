@@ -50,7 +50,7 @@ useEffect(() => {
      item.id.toString().toLowerCase().includes(searchTerm) + 
      item.name.toLowerCase().includes(searchTerm) +
      item.purhcasedate.toLowerCase().includes(searchTerm) +
-     item.requestDate.toLowerCase().includes(searchTerm) +
+     item.requestdate.toLowerCase().includes(searchTerm) +
      item.price.toString().toLowerCase().includes(searchTerm)  +
      item.quantity.toString().toLowerCase().includes(searchTerm)      
   ); 
@@ -85,7 +85,16 @@ const count = Math.ceil(data.length / PER_PAGE);
     }
     return sortConfig.key === name ? sortConfig.direction : undefined;
   };
-  
+  const myArr =
+   [
+    "Id",
+    "Purhcase Date",
+    "Price",
+    "Quantity",
+    "Name",
+    "Request Date"
+  ]
+
   return (
     <div>      
     <Header />
@@ -98,66 +107,23 @@ const count = Math.ceil(data.length / PER_PAGE);
             onChange={handleFilterChange}
             className="filterinput"
           />   
-    <table>
-      <thead>
-        <tr>          
-          <th>
-            <button
-              type="button"
-              onClick={() => requestSort('id')}
-              className={getClassNamesFor('id')}
-            >
-              Sl No
-            </button>
-           
+    <table>  
+    <thead>
+      <tr>           
+        {   
+        myArr.map((item, i) =>  
+        
+          <th key={item + i}>     
+            <button  key={item}
+            type="button"
+            onClick={() => requestSort(item.replace(/\s+/g, '').toLowerCase())}
+            className={getClassNamesFor(item.replace(/\s+/g, '').toLowerCase())}
+            >  {item}</button> 
           </th>
-          <th>
-            <button
-              type="button"
-              onClick={() => requestSort('purhcasedate')}
-              className={getClassNamesFor('purhcasedate')}
-            >
-              Purchased Date
-            </button>
-          </th>
-          <th>
-            <button
-              type="button"
-              onClick={() => requestSort('price')}
-              className={getClassNamesFor('price')}
-            >
-              Price
-            </button>
-          </th>
-          <th>
-            <button
-              type="button"
-              onClick={() => requestSort('quantity')}
-              className={getClassNamesFor('quantity')}
-            >
-              Quantity
-            </button>
-          </th>
-          <th>
-            <button
-              type="button"
-              onClick={() => requestSort('name')}
-              className={getClassNamesFor('name')}
-            >
-              Emp Name
-            </button>
-          </th>
-          <th>
-            <button
-              type="button"
-              onClick={() => requestSort('requestDate')}
-              className={getClassNamesFor('requestDate')}
-            >
-              Requested Date
-            </button>
-          </th>
-        </tr>
-      </thead>
+          )
+        } 
+      </tr>
+      </thead> 
       <tbody>
         { 
          (errMsg) ? 
@@ -168,7 +134,7 @@ const count = Math.ceil(data.length / PER_PAGE);
               <td>{item.price}</td>
               <td>{item.quantity}</td>
               <td>{item.name}</td>
-            <td>{item.requestDate}</td>
+            <td>{item.requestdate}</td>
           </tr>
           ))
           :
@@ -198,7 +164,7 @@ export default function App() {
   return (
     <div className="App">
       <ProductTable
-        products={data}
+        products={data.row}
       />
     </div>
   );
